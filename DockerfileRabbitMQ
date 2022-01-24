@@ -1,0 +1,31 @@
+#Creating Rabbit file
+
+FROM centos:8
+
+COPY .rabbitmq.repo /etc/yum.repos.d/
+
+ADD init.sh /init.sh
+
+ENV RABBITMQ_USER user
+
+ENV RABBITMQ_PASSWORD user
+
+ENV RABBITMQ_PID_FILE /var/lib/rabbitmq/mnesia/rabbitmq
+
+RUN yum update -y
+
+RUN yum -q makecache -y --disablerepo='*' --enablerepo='rabbitmq_erlang-noarch' --enablerepo='rabbitmq_server-noarch'
+
+RUN yum install socat logrotate -y
+
+RUN yum install --repo rabbitmq_erlang --repo rabbitmq_server-noarch erlang rabbitmq-server
+
+CMD ["/usr/sbin/rabbitmq-server","-D","FOREGROUND"]
+
+RUN rabbitmq-plugins enable rabbitmq_management
+
+RUN chmod +x /init.sh
+
+EXPOSE 15672
+
+CMD ["/init.sh"]
